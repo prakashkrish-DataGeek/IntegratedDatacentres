@@ -1,4 +1,4 @@
-# 🌐 EcoGrid AI — Infrastructure Siting Intelligence Platform
+# 🌐 EcoGrid AI — Datacentres Siting Intelligence Platform
 
 > **Multi-vector spatial risk scoring for hyper-scale compute infrastructure, combining satellite geospatial data, power grid telemetry, hydrological modelling, seismic hazard classification, and land surface temperature analytics to produce a defensible Composite Risk Index for data centre siting decisions.**
 
