@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoGrid AI — Infrastructure Siting Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:        #0d1117;
+  --ink-soft:   #3d444d;
+  --ink-mute:   #6e7681;
+  --surface:    #ffffff;
+  --surface-2:  #f6f8fa;
+  --surface-3:  #eaeef2;
+  --border:     #d0d7de;
+  --accent:     #0969da;
+  --accent-dim: #dbeafe;
+  --red:        #cf222e;
+  --amber:      #9a6700;
+  --green:      #1a7f37;
+  --mono:       'IBM Plex Mono', monospace;
+  --sans:       'IBM Plex Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP NAV ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 999;
+}
+.brand {
+  font-family: var(--mono); font-size: 15px; font-weight: 500;
+  color: var(--ink); letter-spacing: -0.3px;
+}
+.brand em { color: var(--accent); font-style: normal; }
+.nav-pills { display: flex; gap: 4px; }
+.nav-pills a {
+  padding: 5px 12px; border-radius: 6px;
+  color: var(--ink-soft); text-decoration: none; font-size: 13px; font-weight: 500;
+  transition: background 0.15s;
+}
+.nav-pills a:hover { background: var(--surface-2); color: var(--ink); }
+.version-tag {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-mute);
+  border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 52px 40px 36px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-mute);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px;
+}
+.hero h1 {
+  font-size: 32px; font-weight: 600; color: var(--ink);
+  line-height: 1.25; margin-bottom: 16px; max-width: 780px;
+}
+.hero-desc {
+  font-size: 15px; color: var(--ink-soft); max-width: 820px; line-height: 1.7;
+  margin-bottom: 28px;
+}
+.meta-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.meta-pill {
+  font-family: var(--mono); font-size: 11px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 4px 10px; color: var(--ink-soft);
+}
+.meta-pill b { color: var(--ink); }
+
+/* ── FORMULA BANNER ── */
+.formula-bar {
+  background: var(--ink); color: #e6edf3; padding: 18px 40px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.8;
+  border-bottom: 3px solid var(--accent);
+}
+.formula-bar .f-label { color: #8b949e; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.formula-bar code { color: #79c0ff; }
+.formula-weights { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 10px; }
+.fw-item { font-size: 12px; }
+.fw-item .fw-val { color: #ffa657; }
+
+/* ── MAIN LAYOUT ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  min-height: 680px;
+}
+.map-panel {
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.map-panel iframe, .map-panel > div { width: 100% !important; height: 680px !important; }
+
+.intel-panel {
+  display: flex; flex-direction: column;
+  overflow-y: auto; max-height: 680px;
+  background: var(--surface);
+}
+
+/* ── CRI SUMMARY ── */
+.cri-block {
+  padding: 24px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.cri-label { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.cri-number { font-family: var(--mono); font-size: 52px; font-weight: 500; color: #b06000; line-height: 1; }
+.cri-denom { font-size: 16px; color: var(--ink-mute); }
+.cri-badge {
+  display: inline-block; margin-top: 10px; padding: 4px 14px;
+  border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.status-critical { background: #fce8e6; color: #c5221f; border: 1px solid #f5c6c4; }
+.status-warning  { background: #fef7e0; color: #9a6700; border: 1px solid #fce9a0; }
+.status-optimal  { background: #e6f4ea; color: #1a7f37; border: 1px solid #b4dfc4; }
+.cri-region { font-size: 12px; color: var(--ink-mute); margin-top: 8px; }
+.cri-region b { color: var(--ink); }
+
+/* ── VECTOR CARDS ── */
+.vector-card {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+}
+.vc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.vc-title { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+.vc-icon { font-size: 15px; }
+.vc-source { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table td { padding: 5px 0; font-size: 12.5px; }
+.data-table td:first-child { color: var(--ink-soft); width: 65%; }
+.data-table td:last-child { font-family: var(--mono); font-weight: 500; color: var(--ink); text-align: right; }
+.data-table tr { border-bottom: 1px solid var(--surface-3); }
+.data-table tr:last-child { border-bottom: none; }
+
+.score-bar-wrap { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.score-bar-track { flex: 1; height: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.score-bar-val { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.score-weight { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); white-space: nowrap; }
+
+/* ── DATA SOURCES TABLE ── */
+.section { padding: 40px; border-bottom: 1px solid var(--border); }
+.section-title {
+  font-size: 11px; font-family: var(--mono); color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.ds-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ds-table th {
+  font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 12px;
+  background: var(--surface-2); border: 1px solid var(--border); text-align: left;
+}
+.ds-table td {
+  padding: 10px 12px; border: 1px solid var(--border);
+  vertical-align: top; font-size: 12.5px;
+}
+.ds-table tr:hover td { background: var(--surface-2); }
+.ds-table code { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+
+/* ── RESULTS SUMMARY ── */
+.findings-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+  margin-top: 0;
+}
+.finding-card {
+  border: 1px solid var(--border); border-radius: 6px; padding: 18px;
+  border-top: 3px solid var(--accent);
+}
+.finding-card .fc-label { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.finding-card .fc-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1.1; }
+.finding-card .fc-unit { font-size: 11px; color: var(--ink-mute); margin-top: 4px; }
+.finding-card .fc-note { font-size: 12px; color: var(--ink-soft); margin-top: 8px; line-height: 1.4; }
+
+/* ── MITIGATION ── */
+.mitigation-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
+}
+.mit-card {
+  border: 1px solid var(--border); border-radius: 6px; padding: 20px;
+  background: var(--surface);
+}
+.mit-card .mit-num { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-bottom: 8px; }
+.mit-card h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+.mit-card p { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+.mit-card .mit-tag {
+  display: inline-block; margin-top: 10px; margin-right: 6px;
+  font-family: var(--mono); font-size: 10px; padding: 2px 8px;
+  background: var(--accent-dim); color: var(--accent); border-radius: 4px;
+}
+
+/* ── SOLAR OPPORTUNITY ── */
+.solar-panel {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0; border-radius: 6px; padding: 24px;
+  margin-top: 0;
+}
+.solar-panel h3 { font-size: 15px; font-weight: 600; color: #14532d; margin-bottom: 14px; }
+.solar-stats { display: flex; flex-wrap: wrap; gap: 20px; }
+.solar-stat .ss-val { font-family: var(--mono); font-size: 28px; font-weight: 500; color: #16a34a; }
+.solar-stat .ss-label { font-size: 12px; color: #166534; }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--ink); color: #8b949e; padding: 28px 40px;
+  font-size: 12px; font-family: var(--mono);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: gap;
+}
+.footer a { color: #79c0ff; text-decoration: none; }
+
+@media (max-width: 900px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .intel-panel { max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="brand"><em>EcoGrid</em> AI · Infrastructure Siting Intelligence</div>
+  <div class="nav-pills">
+    <a href="#map-section">Spatial View</a>
+    <a href="#data-sources">Data Sources</a>
+    <a href="#findings">Key Findings</a>
+    <a href="#mitigation">Mitigation</a>
+    <a href="https://github.com/prakashkrish-DataGeek" target="_blank">GitHub</a>
+  </div>
+  <div class="version-tag">v2.0 · May 2026</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">Infrastructure Intelligence Platform · Compute Corridor Risk Assessment</div>
+  <h1>EcoGrid AI — Physical Boundary Stress Analysis<br>for Hyper-Scale Data Centre Siting</h1>
+  <p class="hero-desc">
+    A five-vector spatial intelligence model combining satellite-derived hydrological drawdown rates,
+    power transmission interconnect constraints, synthetic aperture radar terrain displacement proxies,
+    BIS seismic zonation, and Landsat-9 land surface temperature to produce a Composite Risk Index (CRI)
+    for compute infrastructure siting decisions. Engineered for the Bengaluru–Chennai corridor where
+    groundwater over-exploitation, grid congestion, and urban heat island effects converge.
+  </p>
+  <div class="meta-pills">
+    <div class="meta-pill"><b>Target Region:</b> Bengaluru-East Compute Sector (Phase-1)</div>
+    <div class="meta-pill"><b>CGWB Status:</b> Over-exploited</div>
+    <div class="meta-pill"><b>Grid:</b> Southern Regional Grid</div>
+    <div class="meta-pill"><b>Seismic Zone:</b> BIS IS-1893 Zone II</div>
+    <div class="meta-pill"><b>Coordinates:</b> 12.9716°N, 77.5946°E</div>
+    <div class="meta-pill"><b>Generated:</b> May 2026</div>
+  </div>
+</section>
+
+<div class="formula-bar">
+  <div class="f-label">Composite Risk Index Formula (AHP-Weighted)</div>
+  <code>CRI = (0.30 × Hydro) + (0.25 × Grid) + (0.20 × Env) + (0.15 × Seismic) + (0.10 × LST)</code>
+  <div class="formula-weights">
+    <div class="fw-item">Hydrology <span class="fw-val">W=0.30</span> · CGWB / WRIS stations + LULC impervious fraction</div>
+    <div class="fw-item">Grid Reliability <span class="fw-val">W=0.25</span> · CEA substation atlas + queue data</div>
+    <div class="fw-item">Env. Volatility <span class="fw-val">W=0.20</span> · Sentinel-1 SAR backscatter z-score</div>
+    <div class="fw-item">Seismic Hazard <span class="fw-val">W=0.15</span> · BIS IS-1893:2016</div>
+    <div class="fw-item">LST / UHI <span class="fw-val">W=0.10</span> · Landsat-9 Band ST_B10 + ERA5</div>
+  </div>
+</div>
+
+<div id="map-section" class="main-grid">
+
+  <div class="map-panel">
+    <div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+    
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_6275a7d9a44d61f0365388386a17563d {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+        
+    &lt;script src=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_6275a7d9a44d61f0365388386a17563d&quot; &gt;&lt;/div&gt;
+        
+&lt;/body&gt;
+&lt;script&gt;
+    
+    
+            var map_6275a7d9a44d61f0365388386a17563d = L.map(
+                &quot;map_6275a7d9a44d61f0365388386a17563d&quot;,
+                {
+                    center: [12.9716, 77.5946],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 12,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_ce310a09c9be4507d69ae577fc5d891a = L.tileLayer(
+                &quot;https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 20,
+  &quot;maxNativeZoom&quot;: 20,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\&quot;https://carto.com/attributions\&quot;\u003eCARTO\u003c/a\u003e&quot;,
+  &quot;subdomains&quot;: &quot;abcd&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+        
+    
+            tile_layer_ce310a09c9be4507d69ae577fc5d891a.addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+    
+            var marker_dc3d18cb6b0e2f43f03f74b37c573b12 = L.marker(
+                [12.9716, 77.5946],
+                {
+}
+            ).addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+    
+            var icon_d5b3ea7b0e0ab94310660d6674ffdc66 = L.AwesomeMarkers.icon(
+                {
+  &quot;markerColor&quot;: &quot;orange&quot;,
+  &quot;iconColor&quot;: &quot;white&quot;,
+  &quot;icon&quot;: &quot;bolt&quot;,
+  &quot;prefix&quot;: &quot;fa&quot;,
+  &quot;extraClasses&quot;: &quot;fa-rotate-0&quot;,
+}
+            );
+        
+    
+        var popup_f42fb4187995db7f8ef7c945d2533721 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_6924cb7338b47620e4a8c21b8c4a6899 = $(`&lt;div id=&quot;html_6924cb7338b47620e4a8c21b8c4a6899&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;b&gt;Bengaluru-East Compute Sector (Phase-1)&lt;/b&gt;&lt;br&gt;CRI: 51/100&lt;/div&gt;`)[0];
+                popup_f42fb4187995db7f8ef7c945d2533721.setContent(html_6924cb7338b47620e4a8c21b8c4a6899);
+            
+        
+
+        marker_dc3d18cb6b0e2f43f03f74b37c573b12.bindPopup(popup_f42fb4187995db7f8ef7c945d2533721)
+        ;
+
+        
+    
+    
+                marker_dc3d18cb6b0e2f43f03f74b37c573b12.setIcon(icon_d5b3ea7b0e0ab94310660d6674ffdc66);
+            
+    
+            var heat_map_011b6c8e203abdf4eb2f5d31c3d4da5f = L.heatLayer(
+                [[12.995002213703645, 77.59550201723185, 1], [12.99020045540305, 77.57257287777375, 1], [12.959676125546666, 77.58451998114924, 1], [12.991311627198145, 77.61916792061945, 1], [12.962852390254772, 77.58479799429907, 1], [12.966559820142365, 77.59927817975262, 1], [12.949449783773783, 77.59446636786025, 1], [12.995785347204063, 77.60593299199927, 1], [12.97639897360605, 77.60612987795136, 1], [12.964539063608699, 77.58225413121237, 1], [12.991969741514055, 77.56975548421356, 1], [12.97936552642117, 77.5931048074436, 1], [12.955374805261954, 77.61428549734062, 1], [12.986851986189432, 77.61244471779271, 1], [12.985190983750314, 77.58511218756873, 1], [12.978735310574901, 77.60961711845604, 1], [12.990214414071573, 77.59115732406106, 1], [12.987917697498, 77.59709236143057, 1], [12.979408554691505, 77.5864369734086, 1], [12.990158951824519, 77.57716779546725, 1]],
+                {
+  &quot;minOpacity&quot;: 0.5,
+  &quot;maxZoom&quot;: 18,
+  &quot;radius&quot;: 28,
+  &quot;blur&quot;: 18,
+}
+            );
+        
+    
+            heat_map_011b6c8e203abdf4eb2f5d31c3d4da5f.addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+    
+            var circle_fdfc65e59f859362d89bd856e8d69ba4 = L.circle(
+                [12.9716, 77.5946],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#e63946&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#e63946&quot;, &quot;fillOpacity&quot;: 0.04, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 500, &quot;stroke&quot;: true, &quot;weight&quot;: 1}
+            ).addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+    
+            var circle_ae0b703afbf9e4e805cac0d5acb9a02f = L.circle(
+                [12.9716, 77.5946],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#e63946&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#e63946&quot;, &quot;fillOpacity&quot;: 0.04, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 1500, &quot;stroke&quot;: true, &quot;weight&quot;: 1}
+            ).addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+    
+            var circle_0e3c994b4930ab2142d4268d63b3dfd3 = L.circle(
+                [12.9716, 77.5946],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#e63946&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#e63946&quot;, &quot;fillOpacity&quot;: 0.04, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 3000, &quot;stroke&quot;: true, &quot;weight&quot;: 1}
+            ).addTo(map_6275a7d9a44d61f0365388386a17563d);
+        
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+  </div>
+
+  <div class="intel-panel">
+
+    <div class="cri-block">
+      <div class="cri-label">Composite Risk Index (CRI)</div>
+      <div class="cri-number">51<span class="cri-denom">/100</span></div>
+      <div class="cri-badge status-warning">ELEVATED RISK</div>
+      <div class="cri-region" style="margin-top:10px;"><b>Bengaluru-East Compute Sector (Phase-1)</b></div>
+    </div>
+
+    <!-- VECTOR 1: HYDROLOGY -->
+    <div class="vector-card">
+      <div class="vc-header">
+        <div class="vc-title"><span class="vc-icon">💧</span> Aquifer &amp; Hydrological Stress</div>
+        <div class="vc-source">CGWB · WRIS · ESRI LULC 10m</div>
+      </div>
+      <table class="data-table">
+        <tr><td>Groundwater Depletion Rate</td><td>2.94 m/yr</td></tr>
+        <tr><td>CGWB Aquifer Category</td><td>Over-exploited</td></tr>
+        <tr><td>SW Recharge Deficit</td><td>409.6 mm/yr</td></tr>
+        <tr><td>Nearest Recharge Waterbody</td><td>2.23 km</td></tr>
+        <tr><td>LULC Impervious Surface Fraction</td><td>72.9%</td></tr>
+      </table>
+      
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:82%;background:#c5221f;"></div>
+          </div>
+          <span class="score-bar-val">82/100</span>
+          <span class="score-weight">W=0.30</span>
+        </div>
+    </div>
+
+    <!-- VECTOR 2: GRID -->
+    <div class="vector-card">
+      <div class="vc-header">
+        <div class="vc-title"><span class="vc-icon">⚡</span> Power Grid Reliability</div>
+        <div class="vc-source">CEA Grid Atlas · Southern Regional Grid</div>
+      </div>
+      <table class="data-table">
+        <tr><td>Nearest 220/400 kV Substation</td><td>2.98 km</td></tr>
+        <tr><td>Interconnection Queue Latency</td><td>48 months</td></tr>
+        <tr><td>Regional Renewable Energy Mix</td><td>28.7%</td></tr>
+        <tr><td>T&amp;D Loss (State Average)</td><td>15.0%</td></tr>
+      </table>
+      
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:36%;background:#137333;"></div>
+          </div>
+          <span class="score-bar-val">36/100</span>
+          <span class="score-weight">W=0.25</span>
+        </div>
+    </div>
+
+    <!-- VECTOR 3: ENVIRONMENTAL -->
+    <div class="vector-card">
+      <div class="vc-header">
+        <div class="vc-title"><span class="vc-icon">🛰️</span> Environmental Volatility</div>
+        <div class="vc-source">Sentinel-1 GRD · COPERNICUS/S1_GRD</div>
+      </div>
+      <table class="data-table">
+        <tr><td>SAR Backscatter Z-Score (subsidence proxy)</td><td>0.52</td></tr>
+        <tr><td>10-Year Flood Event Count</td><td>4 events</td></tr>
+        <tr><td>Urban NDVI Index (Sentinel-2)</td><td>0.11</td></tr>
+      </table>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--ink-mute);margin-top:8px;">
+        ⓘ Phase-based InSAR (mm-precision) requires SNAP + StaMPS/MintPy with S1 SLC data
+      </div>
+      
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:60%;background:#f5a623;"></div>
+          </div>
+          <span class="score-bar-val">60/100</span>
+          <span class="score-weight">W=0.20</span>
+        </div>
+    </div>
+
+    <!-- VECTOR 4: SEISMIC -->
+    <div class="vector-card">
+      <div class="vc-header">
+        <div class="vc-title"><span class="vc-icon">🏔️</span> Seismic Hazard</div>
+        <div class="vc-source">BIS IS-1893:2016</div>
+      </div>
+      <table class="data-table">
+        <tr><td>BIS Seismic Zone</td><td>Zone II</td></tr>
+        <tr><td>Peak Ground Acceleration</td><td>0.1 g</td></tr>
+        <tr><td>Design Base Shear Factor</td><td>Ah = Z/2 × Sa/g × I/R</td></tr>
+      </table>
+      
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:20%;background:#137333;"></div>
+          </div>
+          <span class="score-bar-val">20/100</span>
+          <span class="score-weight">W=0.15</span>
+        </div>
+    </div>
+
+    <!-- VECTOR 5: LST -->
+    <div class="vector-card">
+      <div class="vc-header">
+        <div class="vc-title"><span class="vc-icon">🌡️</span> Land Surface Temperature &amp; UHI</div>
+        <div class="vc-source">Landsat-9 ST_B10 · ERA5 Reanalysis</div>
+      </div>
+      <table class="data-table">
+        <tr><td>Peak Urban LST (Summer)</td><td>37.5 °C</td></tr>
+        <tr><td>Urban Heat Island ΔT</td><td>+4.8 °C vs rural</td></tr>
+        <tr><td>Annual Precipitation (ERA5)</td><td>903.0 mm/yr</td></tr>
+      </table>
+      
+        <div class="score-bar-wrap">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:26%;background:#137333;"></div>
+          </div>
+          <span class="score-bar-val">26/100</span>
+          <span class="score-weight">W=0.10</span>
+        </div>
+    </div>
+
+  </div><!-- /intel-panel -->
+</div><!-- /main-grid -->
+
+<!-- DATA SOURCES -->
+<div id="data-sources" class="section">
+  <div class="section-title">Data Sources &amp; Spatial Frameworks</div>
+  <table class="ds-table">
+    <thead>
+      <tr>
+        <th>Dataset</th><th>Source</th><th>Resolution</th>
+        <th>GEE Collection / Reference</th><th>Vector</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Sentinel-1 GRD</td><td>ESA Copernicus</td><td>20m</td><td><code>COPERNICUS/S1_GRD</code></td><td>Environmental</td></tr>
+      <tr><td>Sentinel-2 SR</td><td>ESA Copernicus</td><td>10m</td><td><code>COPERNICUS/S2_SR_HARMONIZED</code></td><td>NDVI / LULC</td></tr>
+      <tr><td>ESRI LULC 2023</td><td>Impact Observatory</td><td>10m</td><td><code>sat-io/ESRI_Global-LULC_10m_TS</code></td><td>Hydrology</td></tr>
+      <tr><td>NASADEM</td><td>NASA JPL</td><td>30m</td><td><code>NASA/NASADEM_HGT/001</code></td><td>Terrain</td></tr>
+      <tr><td>Landsat-9 C2 L2</td><td>USGS / NASA</td><td>30m</td><td><code>LANDSAT/LC09/C02/T1_L2</code></td><td>LST / UHI</td></tr>
+      <tr><td>ERA5 Daily Reanalysis</td><td>ECMWF / Copernicus</td><td>~28km</td><td><code>ECMWF/ERA5_LAND/DAILY_AGGR</code></td><td>Climate / GHI</td></tr>
+      <tr><td>CGWB Well Log Database</td><td>Central Ground Water Board</td><td>Point</td><td>indiawris.gov.in</td><td>Hydrology</td></tr>
+      <tr><td>CEA Substation Atlas</td><td>Central Electricity Authority</td><td>Vector</td><td>cea.nic.in</td><td>Grid</td></tr>
+      <tr><td>BIS IS-1893:2016</td><td>Bureau of Indian Standards</td><td>Zone Map</td><td>Seismic Zone Classification</td><td>Seismic</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- KEY FINDINGS -->
+<div id="findings" class="section" style="background:var(--surface-2);">
+  <div class="section-title">Key Findings — Bengaluru-East Compute Sector (Phase-1)</div>
+  <div class="findings-grid">
+    <div class="finding-card">
+      <div class="fc-label">Groundwater Depletion</div>
+      <div class="fc-val">2.94</div>
+      <div class="fc-unit">metres / year drawdown</div>
+      <div class="fc-note">CGWB classifies this aquifer as <b>Over-exploited</b>. At this rate, cooling-water self-sufficiency is infeasible without closed-loop systems.</div>
+    </div>
+    <div class="finding-card">
+      <div class="fc-label">Grid Interconnection Wait</div>
+      <div class="fc-val">48</div>
+      <div class="fc-unit">months queue latency</div>
+      <div class="fc-note">CEA grid queue significantly extends go-live timelines. On-site solar DG offers a partial bridge during interconnection.</div>
+    </div>
+    <div class="finding-card">
+      <div class="fc-label">Urban Heat Island ΔT</div>
+      <div class="fc-val">+4.8</div>
+      <div class="fc-unit">°C above rural baseline</div>
+      <div class="fc-note">Elevated ambient temperature directly increases PUE (Power Usage Effectiveness), adding 8–14% to cooling energy load.</div>
+    </div>
+    <div class="finding-card">
+      <div class="fc-label">Solar Energy Potential</div>
+      <div class="fc-val">2.66</div>
+      <div class="fc-unit">MW continuous offset achievable</div>
+      <div class="fc-note">GHI of 6.01 kWh/m²/day across 70,742 m² viable rooftop area. Estimated payback: 5.5 years.</div>
+    </div>
+    <div class="finding-card">
+      <div class="fc-label">Flood Exposure (10yr)</div>
+      <div class="fc-val">4</div>
+      <div class="fc-unit">recorded inundation events</div>
+      <div class="fc-note">Critical infrastructure and generator pods must be elevated above the maximum historic floodplain by a minimum 600mm freeboard.</div>
+    </div>
+    <div class="finding-card">
+      <div class="fc-label">Composite Risk Index</div>
+      <div class="fc-val">51</div>
+      <div class="fc-unit">/ 100 · ELEVATED RISK</div>
+      <div class="fc-note">AHP-weighted across five independent spatial vectors. Scores above 65 indicate High Risk requiring substantive design mitigation prior to permitting.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOLAR OPPORTUNITY -->
+<div class="section">
+  <div class="section-title">Renewable Energy Opportunity Assessment</div>
+  <div class="solar-panel">
+    <h3>☀️ Rooftop Solar Generation Potential</h3>
+    <div class="solar-stats">
+      <div class="solar-stat">
+        <div class="ss-val">6.01</div>
+        <div class="ss-label">kWh/m²/day · Global Horizontal Irradiance (ERA5)</div>
+      </div>
+      <div class="solar-stat">
+        <div class="ss-val">70,742</div>
+        <div class="ss-label">m² · Viable Rooftop Area (structural assessment)</div>
+      </div>
+      <div class="solar-stat">
+        <div class="ss-val">63.8</div>
+        <div class="ss-label">MWh/day · Calculated at 75% system efficiency</div>
+      </div>
+      <div class="solar-stat">
+        <div class="ss-val">2.66</div>
+        <div class="ss-label">MW · Continuous Grid Load Offset Equivalent</div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:12.5px;color:#166534;">
+      System efficiency factor (75%) accounts for shading losses, inverter conversion, cable resistance, 
+      and panel degradation over 25-year life. At 6.01 kWh/m²/day irradiance, 
+      this installation would offset approximately 9.3% 
+      of the currently available local renewable energy base-mix, bridging the 48-month 
+      grid interconnection queue with meaningful on-site generation.
+    </p>
+  </div>
+</div>
+
+<!-- MITIGATION -->
+<div id="mitigation" class="section" style="background:var(--surface-2);border-top:1px solid var(--border);">
+  <div class="section-title">Technical Mitigation Roadmap</div>
+  <div class="mitigation-grid">
+    <div class="mit-card">
+      <div class="mit-num">VECTOR 1 RESPONSE · HYDROLOGY</div>
+      <h4>Closed-Loop Cooling &amp; Artificial Aquifer Recharge</h4>
+      <p>
+        Groundwater depletion of 2.94m/yr combined with 72.9% 
+        LULC impervious coverage renders evaporative or open-loop cooling non-viable without 
+        regulatory challenge. Mandate direct-to-chip immersion cooling or rear-door heat exchanger 
+        systems. Fund localized artificial recharge injection pits alongside percolation trenches 
+        at permeable boundary zones to partially restore the 409.6 mm/yr 
+        recharge deficit.
+      </p>
+      <span class="mit-tag">Immersion Cooling</span>
+      <span class="mit-tag">Recharge Injection</span>
+    </div>
+    <div class="mit-card">
+      <div class="mit-num">VECTOR 2 RESPONSE · GRID</div>
+      <h4>Distributed Solar DG &amp; Intelligent Load Scheduling</h4>
+      <p>
+        Deploy solar across the assessed 70,742 m² viable rooftop footprint 
+        with single-axis tracking systems. This creates a 2.66 MW continuous 
+        offset reducing grid draw during the 48-month interconnection 
+        queue. Complement with AI-driven workload scheduling to shift non-time-sensitive compute 
+        to off-peak grid windows, reducing T&amp;D dependency during peak demand.
+      </p>
+      <span class="mit-tag">On-site DG</span>
+      <span class="mit-tag">AI Load Scheduler</span>
+    </div>
+    <div class="mit-card">
+      <div class="mit-num">VECTOR 3 RESPONSE · ENVIRONMENT</div>
+      <h4>Continuous SAR Monitoring &amp; Floodplain Hardening</h4>
+      <p>
+        With 4 recorded 10-year flood events and an SAR backscatter 
+        z-score of 0.52 (indicating surface displacement volatility), 
+        all critical infrastructure blocks, generator pods, and primary power entry points 
+        must be elevated above maximum historic inundation levels. Deploy automated 
+        Sentinel-1 backscatter monitoring pipelines to detect pre-failure ground motion 
+        before structural consequences materialise.
+      </p>
+      <span class="mit-tag">Sentinel-1 Monitor</span>
+      <span class="mit-tag">Elevated Plinths</span>
+    </div>
+    <div class="mit-card">
+      <div class="mit-num">VECTOR 4 RESPONSE · SEISMIC</div>
+      <h4>IS-1893 Compliant Structural Design</h4>
+      <p>
+        BIS Zone II classification (PGA: 0.1g) 
+        mandates full IS-1893:2016 and IS-456 compliance for RCC structures. 
+        Critical power infrastructure (UPS, transformers, diesel generators) requires 
+        seismic base-isolation or vibration-dampened mounting systems. Conduct site-specific 
+        geotechnical investigation under IS-1888 before foundation design finalisation.
+      </p>
+      <span class="mit-tag">Base Isolation</span>
+      <span class="mit-tag">IS-1893 Compliance</span>
+    </div>
+    <div class="mit-card">
+      <div class="mit-num">VECTOR 5 RESPONSE · THERMAL</div>
+      <h4>Urban Heat Island Mitigation &amp; PUE Optimisation</h4>
+      <p>
+        A peak LST of 37.5°C with +4.8°C UHI 
+        differential directly degrades cooling coefficient of performance. Deploy high-albedo 
+        roof coatings, green buffer corridors at facility perimeter, and consider water-side 
+        economiser systems during cooler overnight hours. Target PUE of ≤1.3 through 
+        computational fluid dynamics-optimised airflow within the data hall.
+      </p>
+      <span class="mit-tag">High-Albedo Roof</span>
+      <span class="mit-tag">CFD Airflow</span>
+    </div>
+    <div class="mit-card">
+      <div class="mit-num">PROGRAMME GOVERNANCE</div>
+      <h4>Integrated Environmental &amp; Infrastructure Due Diligence</h4>
+      <p>
+        Before permitting, commission an independent Environmental Impact Assessment 
+        per EIA Notification 2006 (MoEF&amp;CC). Engage BBMP and KSPCB for groundwater 
+        extraction no-objection certificates. Coordinate with BESCOM for dedicated 
+        feeder line allotment. Establish a quarterly monitoring cadence covering 
+        all five CRI vectors with threshold-based escalation to site leadership.
+      </p>
+      <span class="mit-tag">EIA Compliance</span>
+      <span class="mit-tag">BESCOM Coordination</span>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div>
+    <div style="color:#e6edf3;font-weight:500;margin-bottom:4px;">Prakash Krishnamachari</div>
+    <div>Senior Data &amp; AI Executive · prakash.krishnamachari@gmail.com</div>
+    <div style="margin-top:4px;">
+      <a href="https://github.com/prakashkrish-DataGeek">github.com/prakashkrish-DataGeek</a>
+      &nbsp;·&nbsp;
+      <a href="https://linkedin.com/in/prakashkrishnamachari">linkedin.com/in/prakashkrishnamachari</a>
+    </div>
+  </div>
+  <div style="text-align:right;color:#8b949e;">
+    <div>EcoGrid AI v2.0</div>
+    <div>MIT Licence · Satellite imagery subject to agency terms</div>
+    <div style="margin-top:4px;">Built with GEE · Folium · NumPy · Python 3.11</div>
+  </div>
+</footer>
+
+</body>
+</html>
