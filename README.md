@@ -12,7 +12,7 @@
 
 ## 🗺 Live Platform
 
-**[→ Interactive Infrastructure Intelligence Dashboard](https://prakashkrish-datageek.github.io/Ecogrid-AI/)**
+**[→ Interactive Infrastructure Intelligence Dashboard]([https://prakashkrish-datageek.github.io/Ecogrid-AI/](https://prakashkrish-datageek.github.io/IntegratedDatacentres/))**
 
 Analysing **14.9 GW of proposed AI data centre capacity** across 11 clusters in the US, China, and India — six constraint dimensions, one defensible risk matrix.
 
