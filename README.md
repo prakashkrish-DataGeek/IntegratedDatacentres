@@ -14,8 +14,7 @@
 
 **[→ Interactive Infrastructure Intelligence Dashboard](https://prakashkrish-datageek.github.io/IntegratedDatacentres/)**
 
-Analysing **14.9 GW of proposed AI data centre capacity** across 11 clusters in the US, China, and India — six constraint dimensions, one defensible risk matrix.
-
+Deep dive into the data centre impacts in Bengaluru and Chennai corridor for Power, Water and Scope 2 commitments.
 ---
 
 ## Overview
